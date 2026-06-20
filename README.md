@@ -99,7 +99,17 @@ A single 390×844 phone frame with eight fully interactive screens:
 - **Sign up / log in** from the splash screen. Accounts are stored **on-device** (passwords are salted + SHA-256 hashed, never plain text) — see [`src/storage.ts`](src/storage.ts). The session is remembered across launches.
 - **Liked songs** (the heart) and **playlists** persist per account on the device.
 - **Create a playlist** with the **+** in Library; **add the current song** to one via the **＋** button on the Now Playing screen; open a playlist to play it or delete it.
-- **On-device only:** data doesn't sync across devices and this isn't real cloud auth. The whole auth/data layer lives in `src/storage.ts`, so swapping in a backend (e.g. **Supabase** free tier) for real accounts + cross-device sync only touches that one file.
+- **Cloud sync via Supabase** (when configured): real email/password accounts, and likes/playlists synced across devices. The app uses Supabase when `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` are set, and falls back to on-device storage otherwise. The whole backend is isolated in [`src/backend.ts`](src/backend.ts) (+ `src/supabase.ts` / `src/storage.ts`), so the UI never changes.
+
+## Supabase setup (cloud accounts)
+
+1. Create a free project at **[supabase.com](https://supabase.com)**.
+2. **SQL Editor → New query** → paste [`supabase/schema.sql`](supabase/schema.sql) → **Run** (creates the `user_library` table + row-level-security).
+3. **Authentication → Sign In / Providers → Email:** for the smoothest experience, turn **Confirm email OFF** (instant signup). If you leave it on, new users must click an emailed link before they can log in.
+4. **Project Settings → API:** copy the **Project URL** and **anon public** key into `.env` (already done locally) — and add the same two as environment variables in your host (Vercel → Settings → Environment Variables): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
+5. If email confirmation is on, set **Authentication → URL Configuration → Site URL** to your deployed URL so confirmation links work.
+
+> `.env` is git-ignored, so your keys are never committed. The anon key is safe to ship in the frontend — it only works through the row-level-security rules above.
 
 ### Behaviour
 

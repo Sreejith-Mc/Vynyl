@@ -9,8 +9,10 @@ import {
   type ReactNode,
 } from "react";
 import { streamUrl, type LibTab, type Quality, type Track } from "./data";
-import * as storage from "./storage";
-import type { Playlist, User } from "./storage";
+import * as backend from "./backend";
+import type { AuthUser as User } from "./backend";
+import { loadQuality, newId, saveQuality } from "./storage";
+import type { Playlist } from "./storage";
 
 export type Tab = "home" | "search" | "library" | "profile";
 export type AuthMode = "login" | "signup" | null;
@@ -225,25 +227,25 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   // ---- restore session + saved quality on first load ----
   useEffect(() => {
-    const q = storage.loadQuality();
-    const sess = storage.currentSession();
-    setS((p) => {
-      let next = { ...p };
-      if (q) next.quality = q;
-      if (sess) {
-        const data = storage.loadUserData(sess.email);
-        next = { ...next, user: sess, booted: true, liked: data.liked || {}, playlists: data.playlists || [] };
-      }
-      return next;
+    const q = loadQuality();
+    if (q) setS((p) => ({ ...p, quality: q }));
+    backend.restore().then((user) => {
+      if (!user) return;
+      backend.loadLibrary(user).then((lib) => setS((p) => ({ ...p, user, booted: true, liked: lib.liked || {}, playlists: lib.playlists || [] })));
     });
   }, []);
 
-  // ---- persist per-user data + global prefs ----
+  // ---- persist per-user library (debounced) + global prefs ----
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
-    if (s.user) storage.saveUserData(s.user.email, { liked: s.liked, playlists: s.playlists });
+    if (!s.user) return;
+    clearTimeout(saveTimer.current);
+    const user = s.user;
+    const lib = { liked: s.liked, playlists: s.playlists };
+    saveTimer.current = setTimeout(() => backend.saveLibrary(user, lib), 600);
   }, [s.user, s.liked, s.playlists]);
   useEffect(() => {
-    storage.saveQuality(s.quality);
+    saveQuality(s.quality);
   }, [s.quality]);
 
   const playQueue = useCallback(
@@ -319,18 +321,24 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // ---- auth ----
-  const finishAuth = (user: User) => {
-    const data = storage.loadUserData(user.email);
-    setS((p) => ({ ...p, user, booted: true, authMode: null, authError: "", authBusy: false, tab: "home", liked: data.liked || {}, playlists: data.playlists || [] }));
+  const finishAuth = async (user: User) => {
+    const lib = await backend.loadLibrary(user);
+    setS((p) => ({ ...p, user, booted: true, authMode: null, authError: "", authBusy: false, tab: "home", liked: lib.liked || {}, playlists: lib.playlists || [] }));
   };
   const setAuthMode = useCallback((m: AuthMode) => setS((p) => ({ ...p, authMode: m, authError: "" })), []);
   const signup = useCallback((name: string, email: string, password: string) => {
-    if (!name.trim() || !email.trim() || password.length < 4) {
-      setS((p) => ({ ...p, authError: "Enter a name, a valid email, and a password of at least 4 characters." }));
+    if (!name.trim() || !email.trim() || password.length < 6) {
+      setS((p) => ({ ...p, authError: "Enter a name, a valid email, and a password of at least 6 characters." }));
       return;
     }
     setS((p) => ({ ...p, authBusy: true, authError: "" }));
-    storage.signup(name, email, password).then(finishAuth).catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
+    backend
+      .signup(name, email, password)
+      .then(({ user, needsConfirm }) => {
+        if (needsConfirm) setS((p) => ({ ...p, authBusy: false, authMode: "login", authError: "Account created — check your email to confirm, then log in." }));
+        else if (user) finishAuth(user);
+      })
+      .catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
   }, []);
   const login = useCallback((email: string, password: string) => {
     if (!email.trim() || !password) {
@@ -338,17 +346,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       return;
     }
     setS((p) => ({ ...p, authBusy: true, authError: "" }));
-    storage.login(email, password).then(finishAuth).catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
+    backend
+      .login(email, password)
+      .then(finishAuth)
+      .catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
   }, []);
   const logout = useCallback(() => {
     audioRef.current?.pause();
-    storage.clearSession();
+    backend.logout();
     setS((p) => ({ ...initialState, quality: p.quality }));
   }, []);
 
   // ---- playlists ----
   const createPlaylist = useCallback((name: string) => {
-    const pl: Playlist = { id: storage.newId(), name: name.trim() || "New Playlist", createdAt: Date.now(), tracks: [] };
+    const pl: Playlist = { id: newId(), name: name.trim() || "New Playlist", createdAt: Date.now(), tracks: [] };
     setS((p) => ({ ...p, playlists: [pl, ...p.playlists] }));
     return pl.id;
   }, []);
