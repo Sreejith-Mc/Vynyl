@@ -18,6 +18,27 @@ A warm, neumorphic music-player app — built in **React + TypeScript + Vite** f
 - **Unofficial API:** this uses JioSaavn's public web endpoints, not a sanctioned partner API. It's great for a personal/demo build, but for production you'd want a sanctioned source or a self-hosted proxy. JioSaavn's free tier caps at 320 kbps AAC — there's no true lossless here.
 - The catalog sits behind a thin layer (`src/saavn.ts` + `src/catalog.tsx`), so another source (Spotify, etc.) can be swapped in without touching the UI.
 
+## Legal
+
+- In-app **Legal** screen (Terms / Privacy / Licenses) — open it from **Profile → Terms & Privacy**, the footer link, or the agreement line on the splash screen. Source: [`src/legal.ts`](src/legal.ts) + [`src/screens/Legal.tsx`](src/screens/Legal.tsx).
+- Long-form docs: [TERMS.md](TERMS.md) and [PRIVACY.md](PRIVACY.md).
+- These are **plain-language templates, not legal advice.** Replace every `[bracketed]` placeholder (your name, contact email, jurisdiction) and have a lawyer review before any public release.
+
+### ⚠️ Before you publish (read this)
+
+This build streams from JioSaavn's **unofficial** API by decrypting its media URLs. That is fine for a **private, personal, non-commercial** project, but it is **not safe to publish** as-is:
+
+- It violates **JioSaavn's Terms of Service** (no scraping / reverse-engineering), and
+- it redistributes **labels' copyrighted music** without a licence.
+
+A Terms of Service does **not** fix this — it governs your users, not your right to the music. Before shipping to app stores or adding ads/payments you must change the backend to one of:
+
+1. **Licensed user-auth model** — Spotify Web Playback SDK or Apple MusicKit: the *user* plays through their own subscription; you never host/redistribute audio. (The legitimate "all songs" path.)
+2. **Royalty-free / Creative-Commons only** — Jamendo, Audius, Free Music Archive. Fully redistributable; no major-label/regional catalog.
+3. **A purchased content licence.**
+
+Other pre-publish steps: fill the legal placeholders, add a consent flow if you introduce analytics/accounts, complete the app stores' data-safety / privacy forms, and get legal sign-off.
+
 ## Run it
 
 ```bash

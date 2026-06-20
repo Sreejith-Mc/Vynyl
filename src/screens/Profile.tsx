@@ -55,12 +55,13 @@ export default function Profile() {
       <div style={{ background: "#ECE5D8", borderRadius: 22, padding: "6px 8px", boxShadow: "6px 6px 14px #c9c0b0,-6px -6px 14px #fffdf4" }}>
         {SETTINGS.map((s, i) => {
           const isQuality = s.label === "Audio quality";
+          const isLegal = s.label === "Terms & Privacy";
           const value = isQuality ? qualityLabel(p.quality) : s.value;
           return (
           <div
             key={s.label}
             className="vy-press"
-            onClick={isQuality ? p.toggleQuality : undefined}
+            onClick={isQuality ? p.toggleQuality : isLegal ? p.openLegal : undefined}
             style={{
               display: "flex",
               alignItems: "center",
@@ -95,6 +96,9 @@ export default function Profile() {
 
       <div className="vy-press" style={{ textAlign: "center", margin: "24px 0 8px", fontSize: 14, fontWeight: 700, color: "#F2542D", cursor: "pointer" }}>
         Log out
+      </div>
+      <div onClick={p.openLegal} className="vy-press" style={{ textAlign: "center", margin: "4px 0 8px", fontSize: 12, fontWeight: 600, color: "#bcb29d", cursor: "pointer" }}>
+        Terms · Privacy · Licenses
       </div>
     </div>
   );

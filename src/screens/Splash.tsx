@@ -77,6 +77,13 @@ export default function Splash() {
       <div className="vy-press" onClick={p.getStarted} style={{ marginTop: 18, fontSize: 13.5, fontWeight: 700, color: "#a89e89", cursor: "pointer" }}>
         Log in
       </div>
+      <div style={{ marginTop: 26, fontSize: 11.5, fontWeight: 600, color: "#a89e89", lineHeight: 1.5, maxWidth: 280 }}>
+        By continuing you agree to our{" "}
+        <span onClick={p.openLegal} style={{ color: "#8a7f6a", fontWeight: 800, textDecoration: "underline", cursor: "pointer" }}>
+          Terms &amp; Privacy Policy
+        </span>
+        .
+      </div>
     </div>
   );
 }

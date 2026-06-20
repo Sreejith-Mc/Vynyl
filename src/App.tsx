@@ -2,6 +2,7 @@ import { CatalogProvider } from "./catalog";
 import { BottomNav, MiniPlayer, StatusBar } from "./components/Shell";
 import Detail from "./screens/Detail";
 import Home from "./screens/Home";
+import Legal from "./screens/Legal";
 import Library from "./screens/Library";
 import NowPlaying from "./screens/NowPlaying";
 import Profile from "./screens/Profile";
@@ -43,6 +44,7 @@ function Shell() {
 
         {p.npOpen && <NowPlaying />}
         {p.queueOpen && <Queue />}
+        {p.legalOpen && <Legal />}
       </div>
     </div>
   );

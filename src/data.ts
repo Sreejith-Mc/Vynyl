@@ -107,7 +107,7 @@ export const SETTINGS: SettingRow[] = [
   { icon: "◉", label: "Playback", value: "" },
   { icon: "⚑", label: "Notifications", value: "" },
   { icon: "ⓘ", label: "Account", value: "Premium" },
-  { icon: "⚙", label: "Settings", value: "" },
+  { icon: "§", label: "Terms & Privacy", value: "" },
 ];
 
 export function fmt(sec: number): string {

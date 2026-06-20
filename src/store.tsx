@@ -23,6 +23,7 @@ interface State {
   detail: DetailRef | null;
   npOpen: boolean;
   queueOpen: boolean;
+  legalOpen: boolean;
   shuffle: boolean;
   repeat: boolean;
   libTab: LibTab;
@@ -44,6 +45,7 @@ const initialState: State = {
   detail: null,
   npOpen: false,
   queueOpen: false,
+  legalOpen: false,
   shuffle: false,
   repeat: false,
   libTab: "Playlists",
@@ -80,6 +82,8 @@ export interface PlayerApi extends State {
   openNP: () => void;
   closeNP: () => void;
   toggleQueue: () => void;
+  openLegal: () => void;
+  closeLegal: () => void;
   getStarted: () => void;
   goTab: (t: Tab) => void;
 }
@@ -299,6 +303,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       openNP: () => setS((p) => ({ ...p, npOpen: true })),
       closeNP: () => setS((p) => ({ ...p, npOpen: false })),
       toggleQueue: () => setS((p) => ({ ...p, queueOpen: !p.queueOpen })),
+      openLegal: () => setS((p) => ({ ...p, legalOpen: true })),
+      closeLegal: () => setS((p) => ({ ...p, legalOpen: false })),
       getStarted: () => setS((p) => ({ ...p, booted: true, tab: "home" })),
       goTab: (t) => setS((p) => ({ ...p, tab: t, detail: null })),
     };
