@@ -1,0 +1,14 @@
+# Netlify deploy config. Build the Vite app, publish dist/, and route the
+# /saavn/* music API calls through a serverless function (same role as the
+# Vite dev proxy and the Vercel function).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/saavn/*"
+  to = "/.netlify/functions/saavn/:splat"
+  status = 200
+  force = true

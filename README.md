@@ -52,15 +52,21 @@ npm run preview  # serve the production build
 
 Vynyl is an installable PWA — it adds to your home screen and runs full-screen like a native app, on **both Android and iPhone, no Mac or app store needed**. Because the phone needs to reach it over HTTPS, deploy it once (free) and install from that URL.
 
-**1. Deploy (free, ~2 min) — Vercel:**
+**1. Deploy (free, ~2 min).** Easiest is connecting the GitHub repo — no CLI, and it auto-redeploys on every push.
+
+**Netlify (recommended, via GitHub):**
+1. Go to **app.netlify.com** → sign up (free) with your GitHub account.
+2. **Add new site → Import an existing project → GitHub** → authorize → pick **`Sreejith-Mc/Vynyl`**.
+3. Build settings are auto-read from [`netlify.toml`](netlify.toml) (build `npm run build`, publish `dist`, functions in `netlify/functions`). Click **Deploy**.
+4. ~1–2 min later you get **`https://<name>.netlify.app`**. Done. Every `git push` now redeploys automatically.
+
+The `/saavn/*` music calls are proxied by [`netlify/functions/saavn.js`](netlify/functions/saavn.js) so playback works in production. No environment variables or keys are needed.
+
+**Vercel (alternative):** Import the same repo at **vercel.com** (auto-detects Vite; uses [`vercel.json`](vercel.json) + [`api/saavn.js`](api/saavn.js)) — or via CLI:
 
 ```bash
-npm i -g vercel
-vercel            # first run: log in, accept defaults
-vercel --prod     # gives you https://<your-app>.vercel.app
+npm i -g vercel && vercel --prod
 ```
-
-Vercel auto-detects Vite, builds, and runs the `/saavn` proxy from [`api/saavn.js`](api/saavn.js) (configured in [`vercel.json`](vercel.json)) so the music API works in production. Netlify/Cloudflare Pages work too (you'd port the proxy to their function format).
 
 **2. Install on the phone:**
 
