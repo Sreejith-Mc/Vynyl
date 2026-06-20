@@ -1,28 +1,22 @@
 # Vynyl
 
-A warm, neumorphic music-player app — built in **React + TypeScript + Vite** from the Claude Design handoff. It plays **real, full-length music** with **FLAC lossless** support, streamed from **Jamendo's** free Creative-Commons catalog.
+A warm, neumorphic music-player app — built in **React + TypeScript + Vite** from the Claude Design handoff. It plays **real, full-length music** — Malayalam, Tamil, Hindi, Telugu, English and more — streamed from **JioSaavn's** catalog, with a **320 / 160 kbps quality toggle**.
 
 > *Every song ever made. Wrapped in warmth.*
 
-## Setup — add a free Jamendo Client ID
+## Real audio
 
-Vynyl streams from Jamendo, which needs a free API key:
+- **Full-length playback** of real songs (no 30-second previews) via a real `HTMLAudioElement` — see `src/store.tsx`. No API key or login needed.
+- **Huge multi-language catalog** — Malayalam, Tamil, Hindi, Telugu, English mainstream, etc., with real cover art.
+- **Quality toggle** — switch between **320 kbps (High)** and **160 kbps**. Toggling hot-swaps the stream at the current position without interrupting playback; if 320 isn't published for a track it drops to 160 transparently. Reachable from the Now Playing pill and Profile → *Audio quality*.
+- Play/pause, next/prev, click-to-seek, shuffle, repeat, like, queue, and auto-advance all operate on the real audio element.
 
-1. Sign up at **https://devportal.jamendo.com/**
-2. Create an app and copy its **Client ID**
-3. Put it in `.env`: `VITE_JAMENDO_CLIENT_ID=your_client_id`
-4. Restart the dev server
+## How it streams (and the caveats)
 
-Until a key is present the app runs and shows an in-app setup card.
-
-## Real audio + lossless
-
-- **Full-length playback** of real tracks (no 30-second previews) via a real `HTMLAudioElement` — see `src/store.tsx`.
-- **Lossless toggle** — switch between **MP3 320** and **FLAC**. Toggling hot-swaps the stream at the current position without interrupting playback; if a track has no FLAC master it transparently falls back to MP3. Reachable from the Now Playing pill and the Profile → *Audio quality* row.
-- Play/pause, next/prev, click-to-seek, shuffle, repeat, like, and auto-advance all operate on the real audio element.
-- Search any song/artist; browse playlists, albums, and genres — all real Jamendo data with real cover art.
-- **Catalog scope:** Jamendo is independent/Creative-Commons music (all genres), not the major-label mainstream catalog — full-length "every mainstream song" only exists behind paid services (Spotify Premium / Apple Music). The catalog sits behind a thin layer (`src/jamendo.ts` + `src/catalog.tsx`), so another source can be swapped in without touching the UI.
-- In dev, API calls go through a Vite proxy (`/jamendo` → `api.jamendo.com`) to avoid CORS; audio streams play directly.
+- JioSaavn returns each track's media URL **DES-encrypted**; `src/saavn.ts` decrypts it (key `38346591`, the same thing every community JioSaavn API does internally) to get the real `saavncdn.com` URL, then swaps the `_<bitrate>.mp4` segment for the quality toggle.
+- In dev, API calls go through a Vite proxy (`/saavn` → `www.jiosaavn.com`) to avoid CORS; audio plays directly from the CDN.
+- **Unofficial API:** this uses JioSaavn's public web endpoints, not a sanctioned partner API. It's great for a personal/demo build, but for production you'd want a sanctioned source or a self-hosted proxy. JioSaavn's free tier caps at 320 kbps AAC — there's no true lossless here.
+- The catalog sits behind a thin layer (`src/saavn.ts` + `src/catalog.tsx`), so another source (Spotify, etc.) can be swapped in without touching the UI.
 
 ## Run it
 
@@ -50,8 +44,8 @@ A single 390×844 phone frame with eight fully interactive screens:
 
 ### Behaviour
 
-- A 1-second timer advances the current track and auto-skips at the end.
-- Play / pause, next / prev (with restart-if-past-6s), shuffle, repeat, like, and click-to-seek all work.
+- Real audio playback advances the seek bar and auto-skips to the next track at the end.
+- Play / pause, next / prev (with restart-if-past-3s), shuffle, repeat, like, click-to-seek, and the quality toggle all work.
 - Mini player docks above the nav whenever the app is booted and reflects live progress.
 - Every tappable element has a press-scale affordance; screen and sheet transitions use the design's original keyframes.
 
@@ -60,9 +54,9 @@ A single 390×844 phone frame with eight fully interactive screens:
 ```
 src/
   App.tsx          providers + shell + screen routing
-  store.tsx        player state + real HTMLAudioElement (play/pause/seek/next/prev/shuffle/repeat/lossless)
-  jamendo.ts       Jamendo API client (search, popular, tags, albums) + MP3/FLAC stream URLs
-  catalog.tsx      loads Home shelves from Jamendo on boot, primes the player
+  store.tsx        player state + real HTMLAudioElement (play/pause/seek/next/prev/shuffle/repeat/quality)
+  saavn.ts         JioSaavn client — search, albums, DES-decrypt stream URLs, bitrate swap
+  catalog.tsx      loads Home shelves from JioSaavn on boot, primes the player
   data.ts          types, palette, playlist/genre definitions, helpers
   icons.tsx        SVG icon set (ported verbatim)
   components/Cover.tsx   album cover (real artwork, color fallback)

@@ -60,7 +60,7 @@ export default function Profile() {
           <div
             key={s.label}
             className="vy-press"
-            onClick={isQuality ? p.toggleLossless : undefined}
+            onClick={isQuality ? p.toggleQuality : undefined}
             style={{
               display: "flex",
               alignItems: "center",
@@ -87,7 +87,7 @@ export default function Profile() {
               {s.icon}
             </div>
             <div style={{ flex: 1, fontSize: 15, fontWeight: 700, color: "#3f3727" }}>{s.label}</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: isQuality && p.quality === "lossless" ? "#F2542D" : "#bcb29d" }}>{value}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: isQuality && p.quality === "high" ? "#F2542D" : "#bcb29d" }}>{value}</div>
           </div>
           );
         })}

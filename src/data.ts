@@ -1,4 +1,4 @@
-// ---- Core types (now backed by real iTunes data) ----
+// ---- Core types (backed by real JioSaavn data) ----
 
 export interface Track {
   id: string;
@@ -6,28 +6,30 @@ export interface Track {
   artist: string;
   album: string;
   artwork: string; // cover image url ('' -> fall back to color)
-  audio: string; // full-length streaming URL (Jamendo) — format is swappable
+  audio: string; // full-length streaming URL (JioSaavn CDN, bitrate is swappable)
   len: number; // seconds
   color: string; // fallback / accent tint
 }
 
-export type Quality = "standard" | "lossless";
+// JioSaavn streams cap at 320kbps AAC (no true lossless on the free tier),
+// so the toggle switches bitrate: 160kbps (Normal) <-> 320kbps (High).
+export type Quality = "standard" | "high";
 
 /**
  * Resolve the playable URL for a track at the requested quality.
- * Jamendo stream URLs carry a `format=` param we can swap: mp32 (320kbps MP3)
- * for standard, flac for lossless. Non-Jamendo URLs are returned untouched.
+ * JioSaavn CDN URLs end in `_<bitrate>.mp4` (e.g. _96/_160/_320), so we just
+ * swap the bitrate segment. Non-matching URLs are returned untouched.
  */
 export function streamUrl(t: Track | undefined, quality: Quality): string {
   if (!t || !t.audio) return "";
-  if (/[?&]format=/.test(t.audio)) {
-    return t.audio.replace(/([?&]format=)[^&]*/, `$1${quality === "lossless" ? "flac" : "mp32"}`);
+  if (/_\d+\.mp4/.test(t.audio)) {
+    return t.audio.replace(/_\d+\.mp4/, `_${quality === "high" ? "320" : "160"}.mp4`);
   }
   return t.audio;
 }
 
 export function qualityLabel(quality: Quality): string {
-  return quality === "lossless" ? "FLAC · Lossless" : "MP3 · 320";
+  return quality === "high" ? "320 kbps · High" : "160 kbps";
 }
 
 export interface Album {
@@ -57,39 +59,40 @@ export const PALETTE = ["#C96F4A", "#6E8499", "#7E8B6A", "#D2A24C", "#8A6A8C", "
 
 // Curated "Made for you" playlists — each is really a search term.
 export const PLAYLIST_DEFS: { id: string; title: string; sub: string; query: string }[] = [
-  { id: "daily", title: "Daily Mix 1", sub: "Your daily blend", query: "today's hits" },
-  { id: "focus", title: "Deep Focus", sub: "Instrumental calm", query: "lofi beats" },
-  { id: "chill", title: "Evening Chill", sub: "Wind down", query: "acoustic chill" },
-  { id: "power", title: "Power Hour", sub: "Upbeat energy", query: "workout pop" },
-  { id: "nights", title: "City Nights", sub: "After dark", query: "electronic night" },
+  { id: "daily", title: "Malayalam Melodies", sub: "Mollywood favourites", query: "malayalam melody hits" },
+  { id: "focus", title: "Deep Focus", sub: "Lo-fi & instrumental", query: "lofi" },
+  { id: "chill", title: "Sushin Shyam", sub: "On repeat", query: "Sushin Shyam" },
+  { id: "power", title: "Party Hour", sub: "Upbeat energy", query: "party hits" },
+  { id: "nights", title: "Romantic Nights", sub: "After dark", query: "romantic hits" },
 ];
 
 // Queries that fill the home shelves.
 export const SHELF_QUERIES = {
-  recently: "indie pop",
-  charts: "top hits 2024",
-  newReleases: "new pop album",
+  recently: "malayalam hits",
+  charts: "trending india",
+  newReleases: "2025",
 };
 
+// Browse-all tiles double as quick searches (languages + genres).
 export const GENRES: [string, string][] = [
-  ["Pop", "#E0654F"],
-  ["Hip-Hop", "#C98A3C"],
-  ["Lo-fi", "#7E8B6A"],
-  ["Jazz", "#8A6A8C"],
-  ["Electronic", "#4F8C82"],
-  ["Rock", "#B5533C"],
-  ["Classical", "#6E8499"],
-  ["Acoustic", "#A77A55"],
+  ["Malayalam", "#E0654F"],
+  ["Tamil", "#C98A3C"],
+  ["Hindi", "#7E8B6A"],
+  ["Telugu", "#8A6A8C"],
+  ["English", "#4F8C82"],
+  ["Romance", "#B5533C"],
+  ["Lo-fi", "#6E8499"],
+  ["Party", "#A77A55"],
 ];
 
 export const LIB_TABS = ["Playlists", "Artists", "Albums", "Downloads"] as const;
 export type LibTab = (typeof LIB_TABS)[number];
 
 export const ARTISTS: [string, string][] = [
-  ["Coldplay", "#C96F4A"],
-  ["Dua Lipa", "#6E8499"],
-  ["The Weeknd", "#8A6A8C"],
-  ["Tame Impala", "#D2A24C"],
+  ["Sushin Shyam", "#C96F4A"],
+  ["Arijit Singh", "#6E8499"],
+  ["Anirudh Ravichander", "#8A6A8C"],
+  ["A.R. Rahman", "#D2A24C"],
 ];
 
 export interface SettingRow {

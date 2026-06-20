@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Cover } from "../components/Cover";
 import { ACCENT, MUTED, fmt, type Track } from "../data";
 import { ChevronLeft, DotsVertical, HeartFilled, HeartOutline, PlayIcon, ShuffleIcon } from "../icons";
-import { albumTracks, searchTracks } from "../jamendo";
+import { albumTracks, searchTracks } from "../saavn";
 import { usePlayer } from "../store";
 
 export default function Detail() {
@@ -18,7 +18,7 @@ export default function Detail() {
     (async () => {
       let t: Track[] = [];
       if (detail.kind === "playlist") t = await searchTracks(detail.query, 25);
-      else if (detail.kind === "album") t = await albumTracks(detail.collectionId);
+      else if (detail.kind === "album") t = await albumTracks(detail.collectionId, detail.title + " " + detail.subtitle);
       else t = Object.values(p.liked);
       if (alive) {
         setTracks(t);

@@ -35,7 +35,7 @@ interface State {
   liked: Record<string, Track>;
   detailLiked: Record<string, boolean>;
   quality: Quality;
-  flacUnavailable: boolean;
+  qualityFellBack: boolean;
 }
 
 const initialState: State = {
@@ -55,8 +55,8 @@ const initialState: State = {
   duration: 0,
   liked: {},
   detailLiked: {},
-  quality: "standard",
-  flacUnavailable: false,
+  quality: "high",
+  qualityFellBack: false,
 };
 
 export interface PlayerApi extends State {
@@ -72,7 +72,7 @@ export interface PlayerApi extends State {
   seekTo: (pct: number) => void;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
-  toggleLossless: () => void;
+  toggleQuality: () => void;
   toggleCurLike: () => void;
   toggleDetailLike: () => void;
   isLiked: (id: string) => boolean;
@@ -145,12 +145,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const onPause = () => setS((p) => ({ ...p, playing: false }));
     const onWaiting = () => setS((p) => ({ ...p, loading: true }));
     const onError = () => {
-      // FLAC isn't available for every track — fall back to MP3 transparently.
+      // 320kbps isn't published for every track — drop to 160 transparently.
       const st = sRef.current;
       const track = st.queue[st.idx];
-      if (st.quality === "lossless" && track) {
+      if (st.quality === "high" && track) {
         pendingSeekRef.current = a.currentTime || null;
-        setS((p) => ({ ...p, quality: "standard", flacUnavailable: true }));
+        setS((p) => ({ ...p, quality: "standard", qualityFellBack: true }));
         a.src = streamUrl(track, "standard");
         a.load();
         a.play().catch(() => {});
@@ -243,11 +243,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const next = useCallback(() => advance(1, true), [advance]);
 
-  const toggleLossless = useCallback(() => {
+  const toggleQuality = useCallback(() => {
     const a = audioRef.current;
     const st = sRef.current;
-    const quality: Quality = st.quality === "lossless" ? "standard" : "lossless";
-    setS((p) => ({ ...p, quality, flacUnavailable: false }));
+    const quality: Quality = st.quality === "high" ? "standard" : "high";
+    setS((p) => ({ ...p, quality, qualityFellBack: false }));
     const cur = st.queue[st.idx];
     if (!a || !cur || !a.src) return;
     // Hot-swap the source at the same position, preserving play state.
@@ -280,7 +280,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       back: () => setS((p) => ({ ...p, detail: null })),
       toggleShuffle: () => setS((p) => ({ ...p, shuffle: !p.shuffle })),
       toggleRepeat: () => setS((p) => ({ ...p, repeat: !p.repeat })),
-      toggleLossless,
+      toggleQuality,
       toggleCurLike: () =>
         setS((p) => {
           if (!cur) return p;
@@ -302,7 +302,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       getStarted: () => setS((p) => ({ ...p, booted: true, tab: "home" })),
       goTab: (t) => setS((p) => ({ ...p, tab: t, detail: null })),
     };
-  }, [s, cur, progressPct, playQueue, primeQueue, togglePlayStop, next, prev, seekTo, toggleLossless]);
+  }, [s, cur, progressPct, playQueue, primeQueue, togglePlayStop, next, prev, seekTo, toggleQuality]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }

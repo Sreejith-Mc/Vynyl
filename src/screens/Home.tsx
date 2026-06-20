@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import { useCatalog } from "../catalog";
 import { Cover } from "../components/Cover";
-import { SetupCard } from "../components/SetupCard";
 import { fmt, greeting } from "../data";
 import { usePlayer } from "../store";
 
@@ -48,10 +47,6 @@ export default function Home() {
         </div>
       </div>
 
-      {cat.needsKey && <SetupCard />}
-
-      {!cat.needsKey && (
-        <>
       {/* recently played */}
       <div style={{ ...sectionTitle, marginBottom: 14 }}>Recently played</div>
       {cat.loading ? (
@@ -127,8 +122,6 @@ export default function Home() {
             </div>
           ))}
         </div>
-      )}
-        </>
       )}
     </div>
   );

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Cover } from "../components/Cover";
 import { GENRES, type Track } from "../data";
 import { SearchIcon } from "../icons";
-import { searchTracks } from "../jamendo";
+import { searchTracks } from "../saavn";
 import { usePlayer } from "../store";
 
 export default function Search() {

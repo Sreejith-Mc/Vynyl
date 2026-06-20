@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { PLAYLIST_DEFS, SHELF_QUERIES, type Album, type PlaylistMeta, type Track } from "./data";
-import { JAMENDO_ENABLED, newAlbums, popularTracks, searchTracks } from "./jamendo";
+import { searchAlbums, searchTracks } from "./saavn";
 import { usePlayer } from "./store";
 
 interface Catalog {
@@ -9,10 +9,9 @@ interface Catalog {
   newReleases: Album[];
   made: PlaylistMeta[];
   loading: boolean;
-  needsKey: boolean;
 }
 
-const empty: Catalog = { recently: [], charts: [], newReleases: [], made: [], loading: true, needsKey: false };
+const empty: Catalog = { recently: [], charts: [], newReleases: [], made: [], loading: true };
 const Ctx = createContext<Catalog>(empty);
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
@@ -20,16 +19,12 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const { primeQueue } = usePlayer();
 
   useEffect(() => {
-    if (!JAMENDO_ENABLED) {
-      setCat({ ...empty, loading: false, needsKey: true });
-      return;
-    }
     let alive = true;
     (async () => {
       const [recently, charts, newReleases, ...covers] = await Promise.all([
-        searchTracks(SHELF_QUERIES.recently, 10),
-        popularTracks(8),
-        newAlbums(10),
+        searchTracks(SHELF_QUERIES.recently, 12),
+        searchTracks(SHELF_QUERIES.charts, 10),
+        searchAlbums(SHELF_QUERIES.newReleases, 12),
         ...PLAYLIST_DEFS.map((d) => searchTracks(d.query, 1)),
       ]);
       if (!alive) return;
@@ -43,7 +38,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         color: (covers[i] as Track[])[0]?.color ?? "#C96F4A",
       }));
 
-      setCat({ recently, charts, newReleases, made, loading: false, needsKey: false });
+      setCat({ recently, charts, newReleases, made, loading: false });
 
       if (charts.length) primeQueue(charts);
       else if (recently.length) primeQueue(recently);

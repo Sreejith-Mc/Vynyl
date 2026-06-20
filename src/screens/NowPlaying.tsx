@@ -102,8 +102,8 @@ export default function NowPlaying() {
       <div style={{ flex: "none", display: "flex", flexDirection: "column", alignItems: "center", marginTop: 14 }}>
         <div
           className="vy-press"
-          onClick={p.toggleLossless}
-          title="Toggle lossless audio"
+          onClick={p.toggleQuality}
+          title="Toggle audio quality"
           style={{
             display: "flex",
             alignItems: "center",
@@ -112,17 +112,17 @@ export default function NowPlaying() {
             borderRadius: 12,
             cursor: "pointer",
             background: "#ECE5D8",
-            boxShadow: p.quality === "lossless" ? `inset 0 0 0 999px ${ACCENT}, 3px 3px 7px #cdc4b4` : "3px 3px 7px #cdc4b4,-3px -3px 7px #fff9ee",
-            color: p.quality === "lossless" ? "#fff" : "#7a715e",
+            boxShadow: p.quality === "high" ? `inset 0 0 0 999px ${ACCENT}, 3px 3px 7px #cdc4b4` : "3px 3px 7px #cdc4b4,-3px -3px 7px #fff9ee",
+            color: p.quality === "high" ? "#fff" : "#7a715e",
             fontSize: 12,
             fontWeight: 800,
             letterSpacing: ".3px",
           }}
         >
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: p.quality === "lossless" ? "#fff" : "#bcb29d" }} />
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: p.quality === "high" ? "#fff" : "#bcb29d" }} />
           {qualityLabel(p.quality)}
         </div>
-        {p.flacUnavailable && <div style={{ fontSize: 10.5, fontWeight: 600, color: "#bcb29d", marginTop: 6 }}>Lossless not available for this track — using MP3</div>}
+        {p.qualityFellBack && <div style={{ fontSize: 10.5, fontWeight: 600, color: "#bcb29d", marginTop: 6 }}>320 kbps unavailable for this track — using 160</div>}
       </div>
 
       {/* controls */}
