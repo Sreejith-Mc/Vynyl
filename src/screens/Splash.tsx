@@ -56,7 +56,7 @@ export default function Splash() {
 
       <div
         className="vy-press"
-        onClick={p.getStarted}
+        onClick={() => p.setAuthMode("signup")}
         style={{
           marginTop: 46,
           width: "100%",
@@ -74,7 +74,7 @@ export default function Splash() {
       >
         Get started
       </div>
-      <div className="vy-press" onClick={p.getStarted} style={{ marginTop: 18, fontSize: 13.5, fontWeight: 700, color: "#a89e89", cursor: "pointer" }}>
+      <div className="vy-press" onClick={() => p.setAuthMode("login")} style={{ marginTop: 18, fontSize: 13.5, fontWeight: 700, color: "#a89e89", cursor: "pointer" }}>
         Log in
       </div>
       <div style={{ marginTop: 26, fontSize: 11.5, fontWeight: 600, color: "#a89e89", lineHeight: 1.5, maxWidth: 280 }}>

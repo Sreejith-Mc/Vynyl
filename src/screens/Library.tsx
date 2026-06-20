@@ -31,6 +31,19 @@ export default function Library() {
       glyph: "♥",
       onTap: () => p.openDetail({ kind: "liked", id: "liked", title: "Liked Songs", subtitle: "", color: "#F2542D", artwork: "" }),
     });
+    p.playlists.forEach((pl) =>
+      rows.push({
+        key: pl.id,
+        title: pl.name,
+        sub: pl.tracks.length + " songs · Playlist",
+        color: pl.tracks[0]?.color || "#8A6A8C",
+        artwork: pl.tracks[0]?.artwork,
+        radius: 14,
+        glyph: pl.tracks.length ? "" : "♪",
+        onTap: () =>
+          p.openDetail({ kind: "userplaylist", id: pl.id, title: pl.name, subtitle: "Your playlist", color: pl.tracks[0]?.color || "#8A6A8C", artwork: pl.tracks[0]?.artwork || "", playlistId: pl.id }),
+      })
+    );
     cat.made.forEach((pl) =>
       rows.push({
         key: pl.id,
@@ -87,7 +100,7 @@ export default function Library() {
     <div data-screen-label="Library" style={{ animation: "vyScreenIn .4s ease" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "10px 0 18px" }}>
         <div style={{ fontSize: 25, fontWeight: 800, color: "#3f3727", letterSpacing: "-.5px" }}>Your Library</div>
-        <div className="vy-press" style={{ width: 42, height: 42, borderRadius: "50%", background: "#ECE5D8", boxShadow: "4px 4px 9px #cdc4b4,-4px -4px 9px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", color: "#7a715e", cursor: "pointer" }}>
+        <div className="vy-press" onClick={() => p.openSheet({ type: "createPlaylist" })} title="New playlist" style={{ width: 42, height: 42, borderRadius: "50%", background: "#ECE5D8", boxShadow: "4px 4px 9px #cdc4b4,-4px -4px 9px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", color: "#7a715e", cursor: "pointer" }}>
           <PlusIcon />
         </div>
       </div>

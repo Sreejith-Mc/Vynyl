@@ -8,21 +8,27 @@ import { usePlayer } from "../store";
 export default function Detail() {
   const p = usePlayer();
   const detail = p.detail;
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetched, setFetched] = useState<Track[]>([]);
+  const [fetching, setFetching] = useState(true);
+
+  // Liked + user playlists come straight from the store so they stay live as
+  // you like/add tracks; albums and curated playlists are fetched on open.
+  const live =
+    detail?.kind === "userplaylist"
+      ? p.playlists.find((x) => x.id === detail.playlistId)?.tracks ?? []
+      : detail?.kind === "liked"
+        ? Object.values(p.liked)
+        : null;
 
   useEffect(() => {
-    if (!detail) return;
+    if (!detail || detail.kind === "userplaylist" || detail.kind === "liked") return;
     let alive = true;
-    setLoading(true);
+    setFetching(true);
     (async () => {
-      let t: Track[] = [];
-      if (detail.kind === "playlist") t = await searchTracks(detail.query, 25);
-      else if (detail.kind === "album") t = await albumTracks(detail.collectionId, detail.title + " " + detail.subtitle);
-      else t = Object.values(p.liked);
+      const t = detail.kind === "playlist" ? await searchTracks(detail.query, 25) : await albumTracks(detail.collectionId, detail.title + " " + detail.subtitle);
       if (alive) {
-        setTracks(t);
-        setLoading(false);
+        setFetched(t);
+        setFetching(false);
       }
     })();
     return () => {
@@ -31,10 +37,14 @@ export default function Detail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail?.id, detail?.kind]);
 
+  const tracks = live ?? fetched;
+  const loading = live ? false : fetching;
+
   if (!detail) return null;
   const liked = !!p.detailLiked[detail.id];
   const desc = detail.kind === "liked" ? "The songs you've loved" : detail.subtitle;
-  const meta = `${tracks.length} songs${detail.kind === "playlist" ? " · Playlist" : detail.kind === "album" ? " · Album" : ""}`;
+  const meta = `${tracks.length} songs${detail.kind === "album" ? " · Album" : detail.kind === "liked" ? "" : " · Playlist"}`;
+  const isUserPlaylist = detail.kind === "userplaylist";
 
   return (
     <div data-screen-label="Detail" style={{ animation: "vyScreenIn .4s ease" }}>
@@ -42,8 +52,19 @@ export default function Detail() {
         <div className="vy-press" onClick={p.back} style={{ width: 42, height: 42, borderRadius: "50%", background: "#ECE5D8", boxShadow: "4px 4px 9px #cdc4b4,-4px -4px 9px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", color: "#5a5141", cursor: "pointer" }}>
           <ChevronLeft />
         </div>
-        <div className="vy-press" style={{ width: 42, height: 42, borderRadius: "50%", background: "#ECE5D8", boxShadow: "4px 4px 9px #cdc4b4,-4px -4px 9px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", color: "#5a5141", cursor: "pointer" }}>
-          <DotsVertical />
+        <div
+          className="vy-press"
+          onClick={isUserPlaylist ? () => p.deletePlaylist(detail.playlistId) : undefined}
+          title={isUserPlaylist ? "Delete playlist" : undefined}
+          style={{ width: 42, height: 42, borderRadius: "50%", background: "#ECE5D8", boxShadow: "4px 4px 9px #cdc4b4,-4px -4px 9px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", color: isUserPlaylist ? "#F2542D" : "#5a5141", cursor: "pointer" }}
+        >
+          {isUserPlaylist ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+            </svg>
+          ) : (
+            <DotsVertical />
+          )}
         </div>
       </div>
 

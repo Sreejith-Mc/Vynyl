@@ -1,5 +1,7 @@
 import { CatalogProvider } from "./catalog";
+import { Sheet } from "./components/Sheet";
 import { BottomNav, MiniPlayer, StatusBar } from "./components/Shell";
+import Auth from "./screens/Auth";
 import Detail from "./screens/Detail";
 import Home from "./screens/Home";
 import Legal from "./screens/Legal";
@@ -31,13 +33,15 @@ function Shell() {
   return (
     <div className="vy-stage">
       <div className="vy-phone">
-        {p.booted ? (
+        {p.user ? (
           <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <StatusBar />
             <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "6px 22px 178px" }}>{activeScreen()}</div>
             <MiniPlayer />
             <BottomNav />
           </div>
+        ) : p.authMode ? (
+          <Auth />
         ) : (
           <Splash />
         )}
@@ -45,6 +49,7 @@ function Shell() {
         {p.npOpen && <NowPlaying />}
         {p.queueOpen && <Queue />}
         {p.legalOpen && <Legal />}
+        {p.sheet && <Sheet />}
       </div>
     </div>
   );

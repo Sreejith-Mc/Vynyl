@@ -81,8 +81,15 @@ export default function NowPlaying() {
           <div style={{ fontSize: 24, fontWeight: 800, color: "#3f3727", letterSpacing: "-.5px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cur.title}</div>
           <div style={{ fontSize: 15, fontWeight: 600, color: "#a89e89", marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cur.artist}</div>
         </div>
-        <div className="vy-press" onClick={p.toggleCurLike} style={{ width: 50, height: 50, borderRadius: "50%", background: "#ECE5D8", boxShadow: "4px 4px 9px #cdc4b4,-4px -4px 9px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none", color: ACCENT }}>
-          {curLiked ? <HeartFilled size={24} /> : <HeartOutline size={24} />}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "none" }}>
+          <div className="vy-press" onClick={() => p.openSheet({ type: "addToPlaylist", track: cur })} title="Add to playlist" style={{ width: 50, height: 50, borderRadius: "50%", background: "#ECE5D8", boxShadow: "4px 4px 9px #cdc4b4,-4px -4px 9px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#5a5141" }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 7h11M4 12h11M4 17h7M17 14v6M14 17h6" />
+            </svg>
+          </div>
+          <div className="vy-press" onClick={p.toggleCurLike} style={{ width: 50, height: 50, borderRadius: "50%", background: "#ECE5D8", boxShadow: "4px 4px 9px #cdc4b4,-4px -4px 9px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: ACCENT }}>
+            {curLiked ? <HeartFilled size={24} /> : <HeartOutline size={24} />}
+          </div>
         </div>
       </div>
 

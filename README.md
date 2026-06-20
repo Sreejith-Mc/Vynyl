@@ -88,6 +88,13 @@ A single 390×844 phone frame with eight fully interactive screens:
 | **Now Playing** | Spinning vinyl (pauses with playback), seek bar, full transport |
 | **Queue** | Now-playing card with animated equaliser + up-next list |
 
+### Accounts, likes & playlists
+
+- **Sign up / log in** from the splash screen. Accounts are stored **on-device** (passwords are salted + SHA-256 hashed, never plain text) — see [`src/storage.ts`](src/storage.ts). The session is remembered across launches.
+- **Liked songs** (the heart) and **playlists** persist per account on the device.
+- **Create a playlist** with the **+** in Library; **add the current song** to one via the **＋** button on the Now Playing screen; open a playlist to play it or delete it.
+- **On-device only:** data doesn't sync across devices and this isn't real cloud auth. The whole auth/data layer lives in `src/storage.ts`, so swapping in a backend (e.g. **Supabase** free tier) for real accounts + cross-device sync only touches that one file.
+
 ### Behaviour
 
 - Real audio playback advances the seek bar and auto-skips to the next track at the end.

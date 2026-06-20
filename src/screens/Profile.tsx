@@ -11,14 +11,15 @@ const statCard: CSSProperties = {
   textAlign: "center",
 };
 
-const STATS: [string, string][] = [
-  ["128", "Playlists"],
-  ["2.3k", "Following"],
-  ["94h", "This month"],
-];
 
 export default function Profile() {
   const p = usePlayer();
+  const initial = (p.user?.name || "A").trim().charAt(0).toUpperCase() || "A";
+  const stats: [string, string][] = [
+    [String(p.playlists.length), "Playlists"],
+    [String(Object.keys(p.liked).length), "Liked"],
+    ["94h", "This month"],
+  ];
   return (
     <div data-screen-label="Profile" style={{ animation: "vyScreenIn .4s ease" }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "16px 0 26px" }}>
@@ -37,14 +38,14 @@ export default function Profile() {
             fontSize: 34,
           }}
         >
-          A
+          {initial}
         </div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#3f3727", marginTop: 16 }}>Alex Rivera</div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "#a89e89", marginTop: 3 }}>Vynyl Premium</div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: "#3f3727", marginTop: 16 }}>{p.user?.name || "Guest"}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#a89e89", marginTop: 3 }}>{p.user?.email || "Vynyl"}</div>
       </div>
 
       <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
-        {STATS.map(([n, l]) => (
+        {stats.map(([n, l]) => (
           <div key={l} style={statCard}>
             <div style={{ fontSize: 22, fontWeight: 800, color: "#3f3727" }}>{n}</div>
             <div style={{ fontSize: 11.5, fontWeight: 600, color: "#a89e89", marginTop: 2 }}>{l}</div>
@@ -94,7 +95,7 @@ export default function Profile() {
         })}
       </div>
 
-      <div className="vy-press" style={{ textAlign: "center", margin: "24px 0 8px", fontSize: 14, fontWeight: 700, color: "#F2542D", cursor: "pointer" }}>
+      <div className="vy-press" onClick={p.logout} style={{ textAlign: "center", margin: "24px 0 8px", fontSize: 14, fontWeight: 700, color: "#F2542D", cursor: "pointer" }}>
         Log out
       </div>
       <div onClick={p.openLegal} className="vy-press" style={{ textAlign: "center", margin: "4px 0 8px", fontSize: 12, fontWeight: 600, color: "#bcb29d", cursor: "pointer" }}>

@@ -9,16 +9,27 @@ import {
   type ReactNode,
 } from "react";
 import { streamUrl, type LibTab, type Quality, type Track } from "./data";
+import * as storage from "./storage";
+import type { Playlist, User } from "./storage";
 
 export type Tab = "home" | "search" | "library" | "profile";
+export type AuthMode = "login" | "signup" | null;
+export type Sheet = { type: "createPlaylist" } | { type: "addToPlaylist"; track: Track } | null;
 
 export type DetailRef =
   | { kind: "playlist"; id: string; title: string; subtitle: string; color: string; artwork: string; query: string }
   | { kind: "album"; id: string; title: string; subtitle: string; color: string; artwork: string; collectionId: string }
+  | { kind: "userplaylist"; id: string; title: string; subtitle: string; color: string; artwork: string; playlistId: string }
   | { kind: "liked"; id: "liked"; title: string; subtitle: string; color: string; artwork: string };
 
 interface State {
   booted: boolean;
+  user: User | null;
+  authMode: AuthMode;
+  authError: string;
+  authBusy: boolean;
+  playlists: Playlist[];
+  sheet: Sheet;
   tab: Tab;
   detail: DetailRef | null;
   npOpen: boolean;
@@ -41,6 +52,12 @@ interface State {
 
 const initialState: State = {
   booted: false,
+  user: null,
+  authMode: null,
+  authError: "",
+  authBusy: false,
+  playlists: [],
+  sheet: null,
   tab: "home",
   detail: null,
   npOpen: false,
@@ -84,8 +101,20 @@ export interface PlayerApi extends State {
   toggleQueue: () => void;
   openLegal: () => void;
   closeLegal: () => void;
-  getStarted: () => void;
   goTab: (t: Tab) => void;
+  // auth
+  setAuthMode: (m: AuthMode) => void;
+  signup: (name: string, email: string, password: string) => void;
+  login: (email: string, password: string) => void;
+  logout: () => void;
+  // playlists
+  createPlaylist: (name: string) => string;
+  deletePlaylist: (id: string) => void;
+  addToPlaylist: (playlistId: string, track: Track) => void;
+  removeFromPlaylist: (playlistId: string, trackId: string) => void;
+  // sheet
+  openSheet: (s: Sheet) => void;
+  closeSheet: () => void;
 }
 
 const Ctx = createContext<PlayerApi | null>(null);
@@ -194,6 +223,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
   }, [advance]);
 
+  // ---- restore session + saved quality on first load ----
+  useEffect(() => {
+    const q = storage.loadQuality();
+    const sess = storage.currentSession();
+    setS((p) => {
+      let next = { ...p };
+      if (q) next.quality = q;
+      if (sess) {
+        const data = storage.loadUserData(sess.email);
+        next = { ...next, user: sess, booted: true, liked: data.liked || {}, playlists: data.playlists || [] };
+      }
+      return next;
+    });
+  }, []);
+
+  // ---- persist per-user data + global prefs ----
+  useEffect(() => {
+    if (s.user) storage.saveUserData(s.user.email, { liked: s.liked, playlists: s.playlists });
+  }, [s.user, s.liked, s.playlists]);
+  useEffect(() => {
+    storage.saveQuality(s.quality);
+  }, [s.quality]);
+
   const playQueue = useCallback(
     (tracks: Track[], i = 0, openNp = false) => {
       if (!tracks.length) return;
@@ -266,6 +318,60 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ---- auth ----
+  const finishAuth = (user: User) => {
+    const data = storage.loadUserData(user.email);
+    setS((p) => ({ ...p, user, booted: true, authMode: null, authError: "", authBusy: false, tab: "home", liked: data.liked || {}, playlists: data.playlists || [] }));
+  };
+  const setAuthMode = useCallback((m: AuthMode) => setS((p) => ({ ...p, authMode: m, authError: "" })), []);
+  const signup = useCallback((name: string, email: string, password: string) => {
+    if (!name.trim() || !email.trim() || password.length < 4) {
+      setS((p) => ({ ...p, authError: "Enter a name, a valid email, and a password of at least 4 characters." }));
+      return;
+    }
+    setS((p) => ({ ...p, authBusy: true, authError: "" }));
+    storage.signup(name, email, password).then(finishAuth).catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
+  }, []);
+  const login = useCallback((email: string, password: string) => {
+    if (!email.trim() || !password) {
+      setS((p) => ({ ...p, authError: "Enter your email and password." }));
+      return;
+    }
+    setS((p) => ({ ...p, authBusy: true, authError: "" }));
+    storage.login(email, password).then(finishAuth).catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
+  }, []);
+  const logout = useCallback(() => {
+    audioRef.current?.pause();
+    storage.clearSession();
+    setS((p) => ({ ...initialState, quality: p.quality }));
+  }, []);
+
+  // ---- playlists ----
+  const createPlaylist = useCallback((name: string) => {
+    const pl: Playlist = { id: storage.newId(), name: name.trim() || "New Playlist", createdAt: Date.now(), tracks: [] };
+    setS((p) => ({ ...p, playlists: [pl, ...p.playlists] }));
+    return pl.id;
+  }, []);
+  const deletePlaylist = useCallback((id: string) => {
+    setS((p) => ({
+      ...p,
+      playlists: p.playlists.filter((x) => x.id !== id),
+      detail: p.detail && p.detail.kind === "userplaylist" && p.detail.playlistId === id ? null : p.detail,
+    }));
+  }, []);
+  const addToPlaylist = useCallback((playlistId: string, track: Track) => {
+    setS((p) => ({
+      ...p,
+      playlists: p.playlists.map((pl) => (pl.id === playlistId && !pl.tracks.some((t) => t.id === track.id) ? { ...pl, tracks: [...pl.tracks, track] } : pl)),
+    }));
+  }, []);
+  const removeFromPlaylist = useCallback((playlistId: string, trackId: string) => {
+    setS((p) => ({ ...p, playlists: p.playlists.map((pl) => (pl.id === playlistId ? { ...pl, tracks: pl.tracks.filter((t) => t.id !== trackId) } : pl)) }));
+  }, []);
+
+  const openSheet = useCallback((sheet: Sheet) => setS((p) => ({ ...p, sheet })), []);
+  const closeSheet = useCallback(() => setS((p) => ({ ...p, sheet: null })), []);
+
   const cur = s.queue[s.idx];
   const progressPct = s.duration > 0 ? Math.min(100, (s.currentTime / s.duration) * 100) : 0;
 
@@ -305,10 +411,40 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       toggleQueue: () => setS((p) => ({ ...p, queueOpen: !p.queueOpen })),
       openLegal: () => setS((p) => ({ ...p, legalOpen: true })),
       closeLegal: () => setS((p) => ({ ...p, legalOpen: false })),
-      getStarted: () => setS((p) => ({ ...p, booted: true, tab: "home" })),
       goTab: (t) => setS((p) => ({ ...p, tab: t, detail: null })),
+      setAuthMode,
+      signup,
+      login,
+      logout,
+      createPlaylist,
+      deletePlaylist,
+      addToPlaylist,
+      removeFromPlaylist,
+      openSheet,
+      closeSheet,
     };
-  }, [s, cur, progressPct, playQueue, primeQueue, togglePlayStop, next, prev, seekTo, toggleQuality]);
+  }, [
+    s,
+    cur,
+    progressPct,
+    playQueue,
+    primeQueue,
+    togglePlayStop,
+    next,
+    prev,
+    seekTo,
+    toggleQuality,
+    setAuthMode,
+    signup,
+    login,
+    logout,
+    createPlaylist,
+    deletePlaylist,
+    addToPlaylist,
+    removeFromPlaylist,
+    openSheet,
+    closeSheet,
+  ]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }
