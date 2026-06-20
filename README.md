@@ -48,6 +48,31 @@ npm run build    # type-check + production bundle into dist/
 npm run preview  # serve the production build
 ```
 
+## Install on your phone (PWA)
+
+Vynyl is an installable PWA — it adds to your home screen and runs full-screen like a native app, on **both Android and iPhone, no Mac or app store needed**. Because the phone needs to reach it over HTTPS, deploy it once (free) and install from that URL.
+
+**1. Deploy (free, ~2 min) — Vercel:**
+
+```bash
+npm i -g vercel
+vercel            # first run: log in, accept defaults
+vercel --prod     # gives you https://<your-app>.vercel.app
+```
+
+Vercel auto-detects Vite, builds, and runs the `/saavn` proxy from [`api/saavn.js`](api/saavn.js) (configured in [`vercel.json`](vercel.json)) so the music API works in production. Netlify/Cloudflare Pages work too (you'd port the proxy to their function format).
+
+**2. Install on the phone:**
+
+- **Android (Chrome):** open the URL → menu **⋮** → **Add to Home screen** / **Install app**.
+- **iPhone (Safari):** open the URL → **Share** → **Add to Home Screen**.
+
+The icon, splash colour, and full-screen standalone mode are already configured. Likes and audio-quality preference persist on-device.
+
+> **iOS limits:** audio pauses when the screen locks / you leave the app — that's an Apple PWA restriction, not a bug. A true background-audio iOS app needs a native build (Mac + Xcode).
+>
+> **Keep it private.** Deploy it for your own use; don't share the public link or list it in app stores while it runs on the JioSaavn backend (see *Before you publish*).
+
 ## What's inside
 
 A single 390×844 phone frame with eight fully interactive screens:

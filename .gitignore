@@ -4,7 +4,11 @@ node_modules/
 # build output
 dist/
 dist-ssr/
+dev-dist/
 *.tsbuildinfo
+
+# deploy
+.vercel
 
 # local editor/agent settings
 .claude/settings.local.json

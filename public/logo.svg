@@ -1,0 +1,32 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="30%" r="90%">
+      <stop offset="0%" stop-color="#F2EADB"/>
+      <stop offset="60%" stop-color="#E7DECC"/>
+      <stop offset="100%" stop-color="#DDD3BF"/>
+    </radialGradient>
+    <linearGradient id="label" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF8458"/>
+      <stop offset="100%" stop-color="#EE4A22"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="38%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="70%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="0" fill="url(#bg)"/>
+
+  <!-- vinyl, kept within the maskable safe zone (~330px diameter) -->
+  <g transform="translate(256 256)">
+    <circle r="165" fill="#1b1917"/>
+    <g fill="none" stroke="#34302b" stroke-width="2" opacity="0.7">
+      <circle r="156"/><circle r="144"/><circle r="132"/><circle r="120"/>
+      <circle r="108"/><circle r="96"/><circle r="84"/>
+    </g>
+    <circle r="165" fill="url(#sheen)"/>
+    <circle r="62" fill="url(#label)"/>
+    <circle r="62" fill="none" stroke="#00000022" stroke-width="6"/>
+    <circle r="11" fill="#F2EADB"/>
+  </g>
+</svg>

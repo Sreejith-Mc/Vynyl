@@ -25,6 +25,17 @@ html,body{margin:0;padding:0}
   box-shadow:34px 34px 70px #c0b7a5,-26px -26px 60px #fff8ec,inset 0 0 0 1px rgba(255,255,255,.35);
 }
 
+/* On a real phone (or installed as a PWA) the app fills the screen instead of
+   rendering a phone-in-a-phone. dvh handles mobile browser chrome correctly. */
+@media (max-width:480px){
+  .vy-stage{padding:0;background:#ECE5D8;align-items:stretch;}
+  .vy-phone{width:100vw;height:100vh;height:100dvh;border-radius:0;box-shadow:none;}
+}
+@media (display-mode:standalone){
+  .vy-stage{padding:0;background:#ECE5D8;align-items:stretch;}
+  .vy-phone{width:100vw;height:100vh;height:100dvh;border-radius:0;box-shadow:none;}
+}
+
 /* Pressable affordance on every tappable element */
 .vy-press{transition:transform .12s ease, filter .12s ease}
 .vy-press:active{transform:scale(.95)}

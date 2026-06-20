@@ -11,7 +11,8 @@
 import CryptoJS from "crypto-js";
 import { PALETTE, type Album, type Track } from "./data";
 
-const BASE = import.meta.env.DEV ? "/saavn" : "https://www.jiosaavn.com";
+// Always relative: dev = Vite proxy, prod = serverless function (both at /saavn).
+const BASE = "/saavn";
 const DES_KEY = CryptoJS.enc.Utf8.parse("38346591");
 
 // ---- helpers ----
