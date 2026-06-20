@@ -1,0 +1,30 @@
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+#root{min-height:100vh}
+
+/* Hide scrollbars (matches prototype) */
+::-webkit-scrollbar{width:0;height:0}
+*{scrollbar-width:none}
+
+/* ---- Keyframes (ported verbatim from the design) ---- */
+@keyframes vyScreenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vySheetUp{from{transform:translateY(101%)}to{transform:translateY(0)}}
+@keyframes vySpin{to{transform:rotate(360deg)}}
+@keyframes vyFade{from{opacity:0}to{opacity:1}}
+@keyframes vyPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes vyShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+
+.vy-stage{
+  min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(120% 120% at 30% 10%,#EFE8DA 0%,#E2D9C8 70%,#D8CFBC 100%);
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;padding:32px 0;
+}
+
+.vy-phone{
+  position:relative;width:390px;height:844px;border-radius:46px;background:#ECE5D8;overflow:hidden;
+  box-shadow:34px 34px 70px #c0b7a5,-26px -26px 60px #fff8ec,inset 0 0 0 1px rgba(255,255,255,.35);
+}
+
+/* Pressable affordance on every tappable element */
+.vy-press{transition:transform .12s ease, filter .12s ease}
+.vy-press:active{transform:scale(.95)}
