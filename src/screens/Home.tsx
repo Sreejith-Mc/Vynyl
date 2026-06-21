@@ -30,20 +30,23 @@ function RowSkeleton({ size = 142 }: { size?: number }) {
 export default function Home() {
   const p = usePlayer();
   const cat = useCatalog();
+  const name = (p.user?.name || "").trim();
+  const firstName = name ? name.split(/\s+/)[0] : "there";
+  const initial = (name || "V").charAt(0).toUpperCase();
 
   return (
     <div data-screen-label="Home" style={{ animation: "vyScreenIn .4s ease" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "10px 0 22px" }}>
-        <div>
+        <div style={{ minWidth: 0, flex: 1, paddingRight: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#a89e89", letterSpacing: ".3px" }}>{greeting()}</div>
-          <div style={{ fontSize: 25, fontWeight: 800, color: "#3f3727", letterSpacing: "-.5px", marginTop: 2 }}>Vynyl</div>
+          <div style={{ fontSize: 25, fontWeight: 800, color: "#3f3727", letterSpacing: "-.5px", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{firstName}</div>
         </div>
         <div
           className="vy-press"
           onClick={() => p.goTab("profile")}
-          style={{ width: 46, height: 46, borderRadius: "50%", background: "linear-gradient(145deg,#F2542D,#FF8458)", boxShadow: "5px 5px 11px #cdbfae,-5px -5px 11px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16, cursor: "pointer" }}
+          style={{ flex: "none", width: 46, height: 46, borderRadius: "50%", background: "linear-gradient(145deg,#F2542D,#FF8458)", boxShadow: "5px 5px 11px #cdbfae,-5px -5px 11px #fffdf4", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16, cursor: "pointer" }}
         >
-          A
+          {initial}
         </div>
       </div>
 
