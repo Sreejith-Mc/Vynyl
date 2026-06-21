@@ -48,7 +48,7 @@ export function MiniPlayer() {
         position: "absolute",
         left: 14,
         right: 14,
-        bottom: "calc(84px + env(safe-area-inset-bottom))",
+        bottom: "calc(70px + env(safe-area-inset-bottom))",
         zIndex: 20,
         background: "#ECE5D8",
         borderRadius: 20,
@@ -122,13 +122,13 @@ export function BottomNav() {
         right: 0,
         bottom: 0,
         zIndex: 25,
-        height: "calc(80px + env(safe-area-inset-bottom))",
+        height: "calc(64px + env(safe-area-inset-bottom))",
         background: "#ECE5D8",
         boxShadow: "0 -8px 22px rgba(196,187,169,.5)",
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "space-around",
-        padding: "14px 8px 0",
+        padding: "10px 8px env(safe-area-inset-bottom)",
       }}
     >
       {NAV.map(({ tab, label, Icon }) => {
