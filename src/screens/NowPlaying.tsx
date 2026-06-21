@@ -24,7 +24,7 @@ export default function NowPlaying() {
         background: "radial-gradient(120% 90% at 50% 12%,#F1E9DA 0%,#E6DCCA 65%,#DCD2BE 100%)",
         display: "flex",
         flexDirection: "column",
-        padding: "18px 26px 30px",
+        padding: "calc(18px + env(safe-area-inset-top)) 26px calc(30px + env(safe-area-inset-bottom))",
         animation: "vySheetUp .42s cubic-bezier(.22,1,.36,1)",
       }}
     >

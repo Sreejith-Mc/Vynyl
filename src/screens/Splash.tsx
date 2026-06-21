@@ -12,7 +12,7 @@ export default function Splash() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: 40,
+        padding: "calc(40px + env(safe-area-inset-top)) 40px calc(40px + env(safe-area-inset-bottom))",
         textAlign: "center",
         background: "radial-gradient(120% 90% at 50% 18%,#F2EADB 0%,#E7DECC 60%,#DDD3BF 100%)",
       }}

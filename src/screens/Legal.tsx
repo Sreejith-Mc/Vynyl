@@ -38,7 +38,7 @@ export default function Legal() {
         background: "radial-gradient(120% 90% at 50% 12%,#F1E9DA 0%,#E6DCCA 70%,#DCD2BE 100%)",
         display: "flex",
         flexDirection: "column",
-        padding: "18px 22px 26px",
+        padding: "calc(18px + env(safe-area-inset-top)) 22px calc(26px + env(safe-area-inset-bottom))",
         animation: "vySheetUp .4s cubic-bezier(.22,1,.36,1)",
       }}
     >

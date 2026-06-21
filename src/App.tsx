@@ -34,7 +34,7 @@ function Shell() {
     <div className="vy-stage">
       <div className="vy-phone">
         {p.user ? (
-          <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingTop: "env(safe-area-inset-top)" }}>
             <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 22px 178px" }}>{activeScreen()}</div>
             <MiniPlayer />
             <BottomNav />

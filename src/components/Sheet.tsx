@@ -37,7 +37,7 @@ export function Sheet() {
         style={{
           background: "#ECE5D8",
           borderRadius: "26px 26px 0 0",
-          padding: "10px 22px 30px",
+          padding: "10px 22px calc(30px + env(safe-area-inset-bottom))",
           boxShadow: "0 -10px 30px rgba(120,108,90,.35)",
           animation: "vySheetUp .32s cubic-bezier(.22,1,.36,1)",
           maxHeight: "78%",

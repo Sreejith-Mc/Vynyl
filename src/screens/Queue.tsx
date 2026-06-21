@@ -23,7 +23,7 @@ export default function Queue() {
         background: "radial-gradient(120% 90% at 50% 12%,#F1E9DA 0%,#E6DCCA 70%,#DCD2BE 100%)",
         display: "flex",
         flexDirection: "column",
-        padding: "18px 24px 30px",
+        padding: "calc(18px + env(safe-area-inset-top)) 24px calc(30px + env(safe-area-inset-bottom))",
         animation: "vySheetUp .4s cubic-bezier(.22,1,.36,1)",
       }}
     >

@@ -43,7 +43,7 @@ export default function Auth() {
         inset: 0,
         display: "flex",
         flexDirection: "column",
-        padding: "20px 30px 36px",
+        padding: "calc(20px + env(safe-area-inset-top)) 30px calc(36px + env(safe-area-inset-bottom))",
         background: "radial-gradient(120% 90% at 50% 18%,#F2EADB 0%,#E7DECC 60%,#DDD3BF 100%)",
         animation: "vyScreenIn .35s ease",
       }}
