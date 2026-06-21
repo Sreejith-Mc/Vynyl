@@ -15,7 +15,7 @@ import { loadQuality, newId, saveQuality } from "./storage";
 import type { Playlist } from "./storage";
 
 export type Tab = "home" | "search" | "library" | "profile";
-export type AuthMode = "login" | "signup" | null;
+export type AuthMode = "login" | "signup" | "forgot" | "reset" | null;
 export type Sheet = { type: "createPlaylist" } | { type: "addToPlaylist"; track: Track } | null;
 
 export type DetailRef =
@@ -108,6 +108,8 @@ export interface PlayerApi extends State {
   setAuthMode: (m: AuthMode) => void;
   signup: (name: string, email: string, password: string) => void;
   login: (email: string, password: string) => void;
+  requestReset: (email: string) => void;
+  submitNewPassword: (password: string) => void;
   logout: () => void;
   // playlists
   createPlaylist: (name: string) => string;
@@ -229,10 +231,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const q = loadQuality();
     if (q) setS((p) => ({ ...p, quality: q }));
-    backend.restore().then((user) => {
-      if (!user) return;
-      backend.loadLibrary(user).then((lib) => setS((p) => ({ ...p, user, booted: true, liked: lib.liked || {}, playlists: lib.playlists || [] })));
+
+    // Catch the password-recovery deep link (Supabase fires PASSWORD_RECOVERY).
+    const sub = backend.onAuthChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setS((p) => ({ ...p, authMode: "reset", user: null, booted: false }));
     });
+    const isRecovery = typeof window !== "undefined" && window.location.hash.includes("type=recovery");
+
+    if (isRecovery) {
+      setS((p) => ({ ...p, authMode: "reset" }));
+    } else {
+      backend.restore().then((user) => {
+        if (!user) return;
+        backend.loadLibrary(user).then((lib) => setS((p) => (p.authMode === "reset" ? p : { ...p, user, booted: true, liked: lib.liked || {}, playlists: lib.playlists || [] })));
+      });
+    }
+    return () => sub?.unsubscribe();
   }, []);
 
   // ---- persist per-user library (debounced) + global prefs ----
@@ -351,6 +365,31 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       .then(finishAuth)
       .catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
   }, []);
+  const requestReset = useCallback((email: string) => {
+    if (!email.trim()) {
+      setS((p) => ({ ...p, authError: "Enter your email." }));
+      return;
+    }
+    setS((p) => ({ ...p, authBusy: true, authError: "" }));
+    backend
+      .requestPasswordReset(email)
+      .then(() => setS((p) => ({ ...p, authBusy: false, authError: "If an account exists for that email, a reset link is on its way — check your inbox." })))
+      .catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
+  }, []);
+  const submitNewPassword = useCallback((password: string) => {
+    if (password.length < 6) {
+      setS((p) => ({ ...p, authError: "Password must be at least 6 characters." }));
+      return;
+    }
+    setS((p) => ({ ...p, authBusy: true, authError: "" }));
+    backend
+      .updatePassword(password)
+      .then((user) => {
+        if (typeof window !== "undefined" && window.history.replaceState) window.history.replaceState(null, "", window.location.pathname);
+        finishAuth(user);
+      })
+      .catch((e) => setS((p) => ({ ...p, authBusy: false, authError: e.message })));
+  }, []);
   const logout = useCallback(() => {
     audioRef.current?.pause();
     backend.logout();
@@ -426,6 +465,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setAuthMode,
       signup,
       login,
+      requestReset,
+      submitNewPassword,
       logout,
       createPlaylist,
       deletePlaylist,
@@ -448,6 +489,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setAuthMode,
     signup,
     login,
+    requestReset,
+    submitNewPassword,
     logout,
     createPlaylist,
     deletePlaylist,

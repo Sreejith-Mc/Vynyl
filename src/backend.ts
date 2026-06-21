@@ -59,6 +59,34 @@ export async function login(email: string, password: string): Promise<AuthUser> 
   return { id: u.email, name: u.name, email: u.email };
 }
 
+export async function requestPasswordReset(email: string): Promise<void> {
+  if (CLOUD && supabase) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin });
+    if (error) throw new Error(error.message);
+    return;
+  }
+  throw new Error("Password reset needs a cloud account. (This build is in on-device mode.)");
+}
+
+export async function updatePassword(password: string): Promise<AuthUser> {
+  if (CLOUD && supabase) {
+    const { data, error } = await supabase.auth.updateUser({ password });
+    if (error) throw new Error(error.message);
+    if (!data.user) throw new Error("Could not update password.");
+    return mapSupaUser(data.user);
+  }
+  throw new Error("Password reset needs a cloud account.");
+}
+
+/** Subscribe to auth events (used to catch the PASSWORD_RECOVERY deep-link). */
+export function onAuthChange(cb: (event: string) => void): { unsubscribe: () => void } | null {
+  if (CLOUD && supabase) {
+    const { data } = supabase.auth.onAuthStateChange((event) => cb(event));
+    return data.subscription;
+  }
+  return null;
+}
+
 export async function logout(): Promise<void> {
   if (CLOUD && supabase) {
     await supabase.auth.signOut();

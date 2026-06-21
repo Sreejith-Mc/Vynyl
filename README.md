@@ -108,6 +108,7 @@ A single 390×844 phone frame with eight fully interactive screens:
 3. **Authentication → Sign In / Providers → Email:** for the smoothest experience, turn **Confirm email OFF** (instant signup). If you leave it on, new users must click an emailed link before they can log in.
 4. **Project Settings → API:** copy the **Project URL** and **anon public** key into `.env` (already done locally) — and add the same two as environment variables in your host (Vercel → Settings → Environment Variables): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
 5. If email confirmation is on, set **Authentication → URL Configuration → Site URL** to your deployed URL so confirmation links work.
+6. **Password reset:** in **Authentication → URL Configuration → Redirect URLs**, add your app origins (e.g. `https://<your-app>.vercel.app/**` and `http://localhost:5173/**`). The reset email links back there; the app detects the recovery link and shows a "Set a new password" screen. (Free tier sends a few reset emails/hour.)
 
 > `.env` is git-ignored, so your keys are never committed. The anon key is safe to ship in the frontend — it only works through the row-level-security rules above.
 
