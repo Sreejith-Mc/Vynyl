@@ -1,17 +1,44 @@
+import { useRef, useState } from "react";
 import { ACCENT, MUTED, fmt, qualityLabel } from "../data";
 import { BigPause, BigPlay, ChevronDown, HeartFilled, HeartOutline, NextIcon, PrevIcon, QueueIcon, RepeatIcon, ShuffleIcon } from "../icons";
 import { usePlayer } from "../store";
 
 export default function NowPlaying() {
   const p = usePlayer();
+  const [scrub, setScrub] = useState<number | null>(null);
+  const draggingRef = useRef(false);
+  const barRef = useRef<HTMLDivElement>(null);
   const cur = p.cur;
   if (!cur) return null;
   const curLiked = !!p.liked[cur.id];
-  const pct = p.progressPct;
+  const dur = p.duration || cur.len;
+  // While dragging, the bar follows the finger (scrub) instead of currentTime.
+  const pct = scrub != null ? scrub : p.progressPct;
+  const shownTime = scrub != null ? (scrub / 100) * dur : p.currentTime;
 
-  const onSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    p.seekTo(((e.clientX - r.left) / r.width) * 100);
+  const pctFrom = (clientX: number) => {
+    const el = barRef.current;
+    if (!el) return 0;
+    const r = el.getBoundingClientRect();
+    return Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100));
+  };
+  const onDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = true;
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch {
+      /* ignore (e.g. synthetic events) */
+    }
+    setScrub(pctFrom(e.clientX));
+  };
+  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (draggingRef.current) setScrub(pctFrom(e.clientX));
+  };
+  const onUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    p.seekTo(pctFrom(e.clientX));
+    setScrub(null);
   };
 
   return (
@@ -95,13 +122,21 @@ export default function NowPlaying() {
 
       {/* seek */}
       <div style={{ flex: "none", marginTop: 22 }}>
-        <div onClick={onSeek} style={{ height: 8, borderRadius: 8, background: "#ECE5D8", boxShadow: "inset 3px 3px 6px #d2c9b9,inset -3px -3px 6px #fff9ee", cursor: "pointer", position: "relative" }}>
-          <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: `${pct}%`, background: "linear-gradient(90deg,#FF8458,#EE4A22)", borderRadius: 8 }} />
-          <div style={{ position: "absolute", top: "50%", left: `${pct}%`, width: 16, height: 16, borderRadius: "50%", background: "#fff", transform: "translate(-50%,-50%)", boxShadow: "0 2px 5px rgba(180,90,50,.5)" }} />
+        <div
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
+          style={{ padding: "11px 0", cursor: "pointer", touchAction: "none" }}
+        >
+          <div ref={barRef} style={{ height: 8, borderRadius: 8, background: "#ECE5D8", boxShadow: "inset 3px 3px 6px #d2c9b9,inset -3px -3px 6px #fff9ee", position: "relative" }}>
+            <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: `${pct}%`, background: "linear-gradient(90deg,#FF8458,#EE4A22)", borderRadius: 8 }} />
+            <div style={{ position: "absolute", top: "50%", left: `${pct}%`, width: scrub != null ? 20 : 16, height: scrub != null ? 20 : 16, borderRadius: "50%", background: "#fff", transform: "translate(-50%,-50%)", boxShadow: "0 2px 6px rgba(180,90,50,.55)", transition: "width .12s ease, height .12s ease" }} />
+          </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 9, fontSize: 12, fontWeight: 700, color: "#a89e89" }}>
-          <span>{fmt(p.currentTime)}</span>
-          <span>{fmt(p.duration || cur.len)}</span>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2, fontSize: 12, fontWeight: 700, color: "#a89e89" }}>
+          <span>{fmt(shownTime)}</span>
+          <span>{fmt(dur)}</span>
         </div>
       </div>
 
