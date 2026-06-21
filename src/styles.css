@@ -1,5 +1,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0}
+/* Cream background fills the device safe areas (status bar / home indicator)
+   so an installed PWA doesn't show black bars behind the real status bar. */
+html,body{margin:0;padding:0;background:#ECE5D8}
 #root{min-height:100vh}
 
 /* Hide scrollbars (matches prototype) */

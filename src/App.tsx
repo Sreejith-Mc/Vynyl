@@ -1,6 +1,6 @@
 import { CatalogProvider } from "./catalog";
 import { Sheet } from "./components/Sheet";
-import { BottomNav, MiniPlayer, StatusBar } from "./components/Shell";
+import { BottomNav, MiniPlayer } from "./components/Shell";
 import Auth from "./screens/Auth";
 import Detail from "./screens/Detail";
 import Home from "./screens/Home";
@@ -35,8 +35,7 @@ function Shell() {
       <div className="vy-phone">
         {p.user ? (
           <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <StatusBar />
-            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "6px 22px 178px" }}>{activeScreen()}</div>
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 22px 178px" }}>{activeScreen()}</div>
             <MiniPlayer />
             <BottomNav />
           </div>
